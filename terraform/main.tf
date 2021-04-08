@@ -28,73 +28,9 @@ data "aws_ami" "ubuntu" {
   owners = ["099720109477"] # Canonical
 }
 
-variable "instance_type" {
-  type    = string
-  default = "t2.micro"
+resource "aws_key_pair" "lfs260" {
+  key_name   = "lfs260"
+  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCtLs2rdJy50y/3dETI5awTLuJji8Bq3+bd3SCBe2FkQhAZw7S70nd99VeYeqMt3hSqJ2C8kqZwcgllAN/pOAgxDF3U9TJtfsKYhUp19a/pg3NIFiv7u6LSg21MsbsmR4+TWd9BNBiW1QAzDiLfEcUSd5h5L1E9EV0UkNdtkFWK2dZfBJCqCCk3qRWWb2E2oPKnsIq6hBTwW6PVtdHuVHXQb07PxP5kLnAmwR4UdRUUe0g+ypmSluEEKHZiKjZUmV6URpqOAum2Z4/nQqALjBiNlX4HvWjgvfbFLa9eShhH0s2EVy0f/VyewaHmL18BcVVQpNdaKwfxXn+14DkA+Add WeiJen For WH gitlab"
 }
 
-variable "root_ebs_size" {
-  type    = number
-  default = 10
-}
 
-resource "aws_instance" "master" {
-  ami           = data.aws_ami.ubuntu.id
-  instance_type = var.instance_type
-
-  tags = {
-    Name = "Master"
-  }
-
-  vpc_security_group_ids = [aws_security_group.allow_all.id]
-
-  root_block_device {
-    volume_size           = var.root_ebs_size
-    delete_on_termination = true
-  }
-}
-
-resource "aws_instance" "worker" {
-  ami           = data.aws_ami.ubuntu.id
-  instance_type = var.instance_type
-
-  tags = {
-    Name = "Worker"
-  }
-
-  vpc_security_group_ids = [aws_security_group.allow_all.id]
-
-  root_block_device {
-    volume_size           = var.root_ebs_size
-    delete_on_termination = true
-  }
-}
-
-data "aws_vpc" "main" {
-  default = true
-}
-
-resource "aws_security_group" "allow_all" {
-  name        = "allow_all"
-  description = "Allow All inbound traffic"
-  vpc_id      = data.aws_vpc.main.id
-
-  ingress {
-    description = "All from VPC"
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "allow_all"
-  }
-}
